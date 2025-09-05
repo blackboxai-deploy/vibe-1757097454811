@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Complete Quiz App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        /* Homepage Styles */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .category-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+        }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .category-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        /* Quiz Interface Styles */
+        .quiz-container {
+            display: none;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .quiz-info {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .timer {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 1.2rem;
+        }
+
+        .timer-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: conic-gradient(#e74c3c 0deg, #ecf0f1 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .question-container {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .question-number {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e9ecef;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .option:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .option.selected {
+            border-color: #4facfe;
+            background: #e3f2fd;
+        }
+
+        .option.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            color: #27ae60;
+        }
+
+        .option.incorrect {
+            border-color: #e74c3c;
+            background: #fdeaea;
+            color: #e74c3c;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results Styles */
+        .results-container {
+            display: none;
+            text-align: center;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .score-text {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .score-percentage {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .performance-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .excellent { background: #d5f4e6; color: #27ae60; }
+        .good { background: #fff3cd; color: #856404; }
+        .average { background: #e2e3e5; color: #6c757d; }
+        .needs-improvement { background: #fdeaea; color: #e74c3c; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                margin: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .quiz-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .quiz-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .score-number {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .question-container {
+                padding: 1.5rem;
+            }
+
+            .option {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 1s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Quiz Master</h1>
+            <p>Test your knowledge across different categories</p>
+        </div>
+
+        <div class="content">
+            <!-- Homepage -->
+            <div id="homepage" class="homepage-container">
+                <h2 style="text-align: center; margin-bottom: 1rem; color: #2c3e50;">Choose Your Quiz Category</h2>
+                <div class="category-grid">
+                    <button class="category-card" onclick="startQuiz('ssc')">
+                        <h3>SSC Quiz</h3>
+                        <p>General Knowledge, Mathematics, English and reasoning questions for SSC preparation</p>
+                    </button>
+                    <button class="category-card" onclick="startQuiz('medical')">
+                        <h3>Medical Quiz</h3>
+                        <p>Biology, Chemistry, Medical terminology and health science questions</p>
+                    </button>
+                    <button class="category-card" onclick="startQuiz('admission')">
+                        <h3>Admission Quiz</h3>
+                        <p>Aptitude, Logical reasoning and general studies for admission tests</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Interface -->
+            <div id="quiz-interface" class="quiz-container">
+                <div class="quiz-header">
+                    <div class="quiz-info">
+                        <span id="current-category"></span>
+                        <div class="question-number" id="question-counter"></div>
+                    </div>
+                    <div class="timer">
+                        <div class="timer-circle" id="timer-display">60</div>
+                        <span>seconds left</span>
+                    </div>
+                </div>
+
+                <div class="question-container">
+                    <div class="question-text" id="question-text"></div>
+                    <div class="options-container" id="options-container"></div>
+                </div>
+
+                <div class="quiz-controls">
+                    <button class="btn btn-secondary" onclick="quitQuiz()">Quit Quiz</button>
+                    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="results-screen" class="results-container">
+                <div class="score-display">
+                    <div class="score-number" id="final-score">0/0</div>
+                    <div class="score-text">Final Score</div>
+                    <div class="score-percentage" id="score-percentage">0%</div>
+                </div>
+
+                <div class="results-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="correct-answers">0</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="incorrect-answers">0</div>
+                        <div class="stat-label">Incorrect</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="time-taken">0s</div>
+                        <div class="stat-label">Time Taken</div>
+                    </div>
+                </div>
+
+                <div class="performance-message" id="performance-message"></div>
+
+                <div class="quiz-controls">
+                    <button class="btn btn-secondary" onclick="restartApp()">Try Another Category</button>
+                    <button class="btn btn-primary" onclick="retakeQuiz()">Retake This Quiz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz Data
+        const quizData = {
+            ssc: [
+                {
+                    question: "What is the capital of India?",
+                    options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"],
+                    correct: 1
+                },
+                {
+                    question: "Who is known as the Father of the Nation in India?",
+                    options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Subhas Chandra Bose", "Bhagat Singh"],
+                    correct: 1
+                },
+                {
+                    question: "What is 25% of 200?",
+                    options: ["25", "50", "75", "100"],
+                    correct: 1
+                },
+                {
+                    question: "Which river is known as the Ganges of the South?",
+                    options: ["Krishna", "Godavari", "Cauvery", "Tungabhadra"],
+                    correct: 1
+                },
+                {
+                    question: "The synonym of 'Enormous' is:",
+                    options: ["Tiny", "Huge", "Medium", "Small"],
+                    correct: 1
+                },
+                {
+                    question: "Who wrote the Indian National Anthem?",
+                    options: ["Bankim Chandra Chattopadhyay", "Rabindranath Tagore", "Sarojini Naidu", "Subhas Chandra Bose"],
+                    correct: 1
+                },
+                {
+                    question: "What is the square root of 144?",
+                    options: ["10", "12", "14", "16"],
+                    correct: 1
+                },
+                {
+                    question: "In which year did India gain independence?",
+                    options: ["1945", "1946", "1947", "1948"],
+                    correct: 2
+                },
+                {
+                    question: "Which is the longest river in India?",
+                    options: ["Yamuna", "Ganga", "Brahmaputra", "Narmada"],
+                    correct: 1
+                },
+                {
+                    question: "The antonym of 'Ancient' is:",
+                    options: ["Old", "Modern", "Historic", "Traditional"],
+                    correct: 1
+                }
+            ],
+            medical: [
+                {
+                    question: "What is the largest organ in the human body?",
+                    options: ["Liver", "Brain", "Skin", "Lungs"],
+                    correct: 2
+                },
+                {
+                    question: "Which blood type is known as the universal donor?",
+                    options: ["A+", "B+", "AB+", "O-"],
+                    correct: 3
+                },
+                {
+                    question: "How many chambers does a human heart have?",
+                    options: ["2", "3", "4", "5"],
+                    correct: 2
+                },
+                {
+                    question: "What is the medical term for high blood pressure?",
+                    options: ["Hypotension", "Hypertension", "Hyperglycemia", "Hypoglycemia"],
+                    correct: 1
+                },
+                {
+                    question: "Which vitamin is produced when skin is exposed to sunlight?",
+                    options: ["Vitamin A", "Vitamin B", "Vitamin C", "Vitamin D"],
+                    correct: 3
+                },
+                {
+                    question: "What is the normal body temperature in Celsius?",
+                    options: ["35°C", "36°C", "37°C", "38°C"],
+                    correct: 2
+                },
+                {
+                    question: "Which organ produces insulin?",
+                    options: ["Liver", "Pancreas", "Kidney", "Spleen"],
+                    correct: 1
+                },
+                {
+                    question: "What is the smallest bone in the human body?",
+                    options: ["Femur", "Tibia", "Stapes", "Radius"],
+                    correct: 2
+                },
+                {
+                    question: "Which part of the brain controls balance?",
+                    options: ["Cerebrum", "Cerebellum", "Medulla", "Pons"],
+                    correct: 1
+                },
+                {
+                    question: "What is the medical term for nearsightedness?",
+                    options: ["Myopia", "Hyperopia", "Astigmatism", "Presbyopia"],
+                    correct: 0
+                }
+            ],
+            admission: [
+                {
+                    question: "If A = 1, B = 2, C = 3, then what is the value of CAB?",
+                    options: ["123", "321", "312", "132"],
+                    correct: 2
+                },
+                {
+                    question: "Complete the series: 2, 6, 12, 20, 30, ?",
+                    options: ["40", "42", "44", "46"],
+                    correct: 1
+                },
+                {
+                    question: "Which word does NOT belong with the others?",
+                    options: ["Chair", "Table", "Desk", "Book"],
+                    correct: 3
+                },
+                {
+                    question: "If it takes 5 machines 5 minutes to make 5 widgets, how long would it take 100 machines to make 100 widgets?",
+                    options: ["1 minute", "5 minutes", "20 minutes", "100 minutes"],
+                    correct: 1
+                },
+                {
+                    question: "What comes next in the pattern: O, T, T, F, F, S, S, E, ?",
+                    options: ["N", "I", "T", "E"],
+                    correct: 0
+                },
+                {
+                    question: "If you rearrange the letters 'CIFAIPC' you would have the name of a:",
+                    options: ["City", "Animal", "Ocean", "River"],
+                    correct: 2
+                },
+                {
+                    question: "Mary's father has 4 children: North, South, and East. What is the name of the fourth child?",
+                    options: ["West", "Mary", "Central", "Middle"],
+                    correct: 1
+                },
+                {
+                    question: "What is 15% of 400?",
+                    options: ["40", "50", "60", "70"],
+                    correct: 2
+                },
+                {
+                    question: "Which number should come next: 1, 1, 2, 3, 5, 8, ?",
+                    options: ["11", "13", "15", "17"],
+                    correct: 1
+                },
+                {
+                    question: "If BLUE is coded as EULB, then DARK is coded as:",
+                    options: ["KRAD", "DRAK", "RDAK", "AKRD"],
+                    correct: 0
+                }
+            ]
+        };
+
+        // Global Variables
+        let currentQuiz = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let timer = 60;
+        let timerInterval = null;
+        let quizStartTime = null;
+        let currentCategory = '';
+
+        // Initialize App
+        function initApp() {
+            showHomepage();
+        }
+
+        // Show Homepage
+        function showHomepage() {
+            document.getElementById('homepage').style.display = 'block';
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'none';
+        }
+
+        // Start Quiz
+        function startQuiz(category) {
+            currentCategory = category;
+            currentQuiz = [...quizData[category]];
+            currentQuestionIndex = 0;
+            score = 0;
+            timer = 60;
+            quizStartTime = Date.now();
+            selectedAnswer = null;
+
+            // Update category display
+            document.getElementById('current-category').textContent = 
+                category.charAt(0).toUpperCase() + category.slice(1) + ' Quiz';
+
+            // Show quiz interface
+            document.getElementById('homepage').style.display = 'none';
+            document.getElementById('quiz-interface').style.display = 'block';
+            document.getElementById('results-screen').style.display = 'none';
+
+            // Start timer
+            startTimer();
+
+            // Load first question
+            loadQuestion();
+        }
+
+        // Start Timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timer--;
+                updateTimerDisplay();
+                
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                }
+            }, 1000);
+        }
+
+        // Update Timer Display
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer-display');
+            timerElement.textContent = timer;
+            
+            // Update timer circle background
+            const percentage = (timer / 60) * 360;
+            timerElement.style.background = `conic-gradient(#e74c3c ${percentage}deg, #ecf0f1 ${percentage}deg)`;
+            
+            // Change color when time is running out
+            if (timer <= 10) {
+                timerElement.style.background = `conic-gradient(#c0392b ${percentage}deg, #ecf0f1 ${percentage}deg)`;
+            }
+        }
+
+        // Load Question
+        function loadQuestion() {
+            const question = currentQuiz[currentQuestionIndex];
+            
+            // Update question counter
+            document.getElementById('question-counter').textContent = 
+                `Question ${currentQuestionIndex + 1} of ${currentQuiz.length}`;
+            
+            // Update question text
+            document.getElementById('question-text').textContent = question.question;
+            
+            // Clear previous options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            // Create option buttons
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('button');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Reset controls
+            selectedAnswer = null;
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('next-btn').textContent = 
+                currentQuestionIndex === currentQuiz.length - 1 ? 'Finish Quiz' : 'Next Question';
+        }
+
+        // Select Answer
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return; // Prevent multiple selections
+            
+            selectedAnswer = index;
+            const question = currentQuiz[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            // Remove any existing classes
+            options.forEach(option => {
+                option.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Mark selected answer
+            options[index].classList.add('selected');
+            
+            // Show correct/incorrect after a brief delay
+            setTimeout(() => {
+                options.forEach((option, i) => {
+                    if (i === question.correct) {
+                        option.classList.add('correct');
+                    } else if (i === index && i !== question.correct) {
+                        option.classList.add('incorrect');
+                    }
+                });
+                
+                // Update score
+                if (index === question.correct) {
+                    score++;
+                }
+                
+                // Enable next button
+                document.getElementById('next-btn').disabled = false;
+            }, 500);
+        }
+
+        // Next Question
+        function nextQuestion() {
+            if (selectedAnswer === null) return;
+            
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < currentQuiz.length) {
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }
+
+        // End Quiz
+        function endQuiz() {
+            clearInterval(timerInterval);
+            const timeTaken = Math.floor((Date.now() - quizStartTime) / 1000);
+            
+            // Show results screen
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'block';
+            
+            // Update results display
+            updateResultsDisplay(timeTaken);
+        }
+
+        // Update Results Display
+        function updateResultsDisplay(timeTaken) {
+            const totalQuestions = currentQuiz.length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            // Update score display
+            document.getElementById('final-score').textContent = `${score}/${totalQuestions}`;
+            document.getElementById('score-percentage').textContent = `${percentage}%`;
+            
+            // Update stats
+            document.getElementById('correct-answers').textContent = score;
+            document.getElementById('incorrect-answers').textContent = totalQuestions - score;
+            document.getElementById('time-taken').textContent = `${timeTaken}s`;
+            
+            // Update performance message
+            const messageElement = document.getElementById('performance-message');
+            let messageClass, messageText;
+            
+            if (percentage >= 90) {
+                messageClass = 'excellent';
+                messageText = '🎉 Excellent! Outstanding performance!';
+            } else if (percentage >= 70) {
+                messageClass = 'good';
+                messageText = '👍 Great job! Well done!';
+            } else if (percentage >= 50) {
+                messageClass = 'average';
+                messageText = '👌 Good effort! Keep practicing!';
+            } else {
+                messageClass = 'needs-improvement';
+                messageText = '📚 Keep studying! You can do better!';
+            }
+            
+            messageElement.className = `performance-message ${messageClass}`;
+            messageElement.textContent = messageText;
+        }
+
+        // Quit Quiz
+        function quitQuiz() {
+            if (confirm('Are you sure you want to quit the quiz? Your progress will be lost.')) {
+                clearInterval(timerInterval);
+                showHomepage();
+            }
+        }
+
+        // Restart App
+        function restartApp() {
+            clearInterval(timerInterval);
+            showHomepage();
+        }
+
+        // Retake Quiz
+        function retakeQuiz() {
+            startQuiz(currentCategory);
+        }
+
+        // Initialize app when page loads
+        window.onload = initApp;
+    </script>
+</body>
+</html>
